@@ -21,7 +21,7 @@ export default function ProductDetails() {
   const [type, setType] = useState("");
 
   useEffect(() => {
-    fetchProduct();
+    if (id) fetchProduct();
   }, [id]);
 
   const fetchProduct = async () => {
@@ -31,36 +31,32 @@ export default function ProductDetails() {
       setMessage("");
       setType("");
 
-      // Fetch single product
       const res = await API.get(`/products/${id}`);
+      const productData = res.data;
 
-      setProduct(res.data);
+      setProduct(productData);
 
       // Fetch related products
       try {
 
         const list = await API.get("/products");
-
         const productsArray = list.data?.products || [];
 
         const related = productsArray.filter(
           (p) =>
-            p.category === res.data.category &&
-            p._id !== res.data._id
+            p.category === productData.category &&
+            p._id !== productData._id
         );
 
         setRelatedProducts(related.slice(0, 4));
 
       } catch (err) {
-
-        console.log("Related products error:", err);
-        setRelatedProducts([]);
-
+        console.log("Related product error:", err);
       }
 
     } catch (err) {
 
-      console.log("Product fetch error:", err);
+      console.error("Product fetch error:", err);
 
       setType("error");
       setMessage("Failed to load product");
@@ -119,8 +115,7 @@ export default function ProductDetails() {
 
       setType("error");
       setMessage(
-        err.response?.data?.message ||
-        "Failed to submit review"
+        err.response?.data?.message || "Failed to submit review"
       );
 
     }
@@ -141,7 +136,6 @@ export default function ProductDetails() {
     }
 
     return stars;
-
   };
 
   if (loading) return <Loader />;
@@ -152,8 +146,7 @@ export default function ProductDetails() {
 
     <div className="max-w-6xl mx-auto p-6">
 
-      {type === "error" && <Message type="error" text={message} />}
-      {type === "success" && <Message type="success" text={message} />}
+      {message && <Message type={type} text={message} />}
 
       {/* PRODUCT SECTION */}
 
@@ -200,6 +193,8 @@ export default function ProductDetails() {
           <p className="text-sm text-gray-600">
             {product.numReviews || 0} reviews
           </p>
+
+          {/* STOCK */}
 
           {product.countInStock > 5 && (
             <p className="text-green-600 font-semibold mt-2">
@@ -292,8 +287,7 @@ export default function ProductDetails() {
           Customer Reviews
         </h2>
 
-        {!product.reviews ||
-        product.reviews.length === 0 ? (
+        {!product.reviews || product.reviews.length === 0 ? (
 
           <p className="text-gray-500">
             No reviews yet
@@ -303,10 +297,7 @@ export default function ProductDetails() {
 
           product.reviews.map((review) => (
 
-            <div
-              key={review._id}
-              className="border-b py-4"
-            >
+            <div key={review._id} className="border-b py-4">
 
               <strong>{review.name}</strong>
 
@@ -373,6 +364,5 @@ export default function ProductDetails() {
       </div>
 
     </div>
-
   );
 }
