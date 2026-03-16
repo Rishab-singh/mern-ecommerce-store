@@ -25,41 +25,42 @@ export default function ProductDetails() {
   }, [id]);
 
   const fetchProduct = async () => {
-
     try {
 
       setLoading(true);
       setMessage("");
       setType("");
 
-      // fetch product
-      const { data } = await API.get(`/products/${id}`);
+      // Fetch single product
+      const res = await API.get(`/products/${id}`);
 
-      if (!data) throw new Error("Product not found");
+      setProduct(res.data);
 
-      setProduct(data);
-
-      // fetch related products separately
+      // Fetch related products
       try {
 
-        const res = await API.get("/products");
+        const list = await API.get("/products");
 
-        const productsArray = res.data?.products || res.data || [];
+        const productsArray = list.data?.products || [];
 
         const related = productsArray.filter(
-          (p) => p.category === data.category && p._id !== data._id
+          (p) =>
+            p.category === res.data.category &&
+            p._id !== res.data._id
         );
 
         setRelatedProducts(related.slice(0, 4));
 
       } catch (err) {
 
-        console.log("Related product error:", err);
+        console.log("Related products error:", err);
         setRelatedProducts([]);
 
       }
 
     } catch (err) {
+
+      console.log("Product fetch error:", err);
 
       setType("error");
       setMessage("Failed to load product");
@@ -69,11 +70,9 @@ export default function ProductDetails() {
       setLoading(false);
 
     }
-
   };
 
   const addToCart = async () => {
-
     try {
 
       await API.post("/cart", {
@@ -89,7 +88,6 @@ export default function ProductDetails() {
       navigate("/login");
 
     }
-
   };
 
   const submitReview = async (e) => {
@@ -121,11 +119,11 @@ export default function ProductDetails() {
 
       setType("error");
       setMessage(
-        err.response?.data?.message || "Failed to submit review"
+        err.response?.data?.message ||
+        "Failed to submit review"
       );
 
     }
-
   };
 
   const renderStars = (value) => {
@@ -154,8 +152,8 @@ export default function ProductDetails() {
 
     <div className="max-w-6xl mx-auto p-6">
 
-      {type === "error" && <Message type={type} text={message} />}
-      {type === "success" && <Message type={type} text={message} />}
+      {type === "error" && <Message type="error" text={message} />}
+      {type === "success" && <Message type="success" text={message} />}
 
       {/* PRODUCT SECTION */}
 
@@ -209,11 +207,12 @@ export default function ProductDetails() {
             </p>
           )}
 
-          {product.countInStock > 0 && product.countInStock <= 5 && (
-            <p className="text-yellow-600 font-semibold mt-2">
-              Only {product.countInStock} left
-            </p>
-          )}
+          {product.countInStock > 0 &&
+            product.countInStock <= 5 && (
+              <p className="text-yellow-600 font-semibold mt-2">
+                Only {product.countInStock} left
+              </p>
+            )}
 
           {product.countInStock === 0 && (
             <p className="text-red-600 font-semibold mt-2">
@@ -293,7 +292,8 @@ export default function ProductDetails() {
           Customer Reviews
         </h2>
 
-        {!product.reviews || product.reviews.length === 0 ? (
+        {!product.reviews ||
+        product.reviews.length === 0 ? (
 
           <p className="text-gray-500">
             No reviews yet
