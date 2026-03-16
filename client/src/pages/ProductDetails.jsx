@@ -25,30 +25,39 @@ export default function ProductDetails() {
   }, [id]);
 
   const fetchProduct = async () => {
+
     try {
 
       setLoading(true);
       setMessage("");
       setType("");
 
+      // fetch product
       const { data } = await API.get(`/products/${id}`);
 
-      if (!data) {
-        throw new Error("Product not found");
-      }
+      if (!data) throw new Error("Product not found");
 
       setProduct(data);
 
-      // Fetch related products
-      const res = await API.get("/products");
+      // fetch related products separately
+      try {
 
-      const productsArray = res.data?.products || res.data || [];
+        const res = await API.get("/products");
 
-      const related = productsArray.filter(
-        (p) => p.category === data.category && p._id !== data._id
-      );
+        const productsArray = res.data?.products || res.data || [];
 
-      setRelatedProducts(related.slice(0, 4));
+        const related = productsArray.filter(
+          (p) => p.category === data.category && p._id !== data._id
+        );
+
+        setRelatedProducts(related.slice(0, 4));
+
+      } catch (err) {
+
+        console.log("Related product error:", err);
+        setRelatedProducts([]);
+
+      }
 
     } catch (err) {
 
@@ -60,9 +69,11 @@ export default function ProductDetails() {
       setLoading(false);
 
     }
+
   };
 
   const addToCart = async () => {
+
     try {
 
       await API.post("/cart", {
@@ -78,11 +89,18 @@ export default function ProductDetails() {
       navigate("/login");
 
     }
+
   };
 
   const submitReview = async (e) => {
 
     e.preventDefault();
+
+    if (rating === 0) {
+      setType("error");
+      setMessage("Please select rating");
+      return;
+    }
 
     try {
 
@@ -107,20 +125,25 @@ export default function ProductDetails() {
       );
 
     }
+
   };
 
   const renderStars = (value) => {
+
     const stars = [];
 
     for (let i = 1; i <= 5; i++) {
+
       stars.push(
         <span key={i}>
           {value >= i ? "⭐" : "☆"}
         </span>
       );
+
     }
 
     return stars;
+
   };
 
   if (loading) return <Loader />;
@@ -131,13 +154,14 @@ export default function ProductDetails() {
 
     <div className="max-w-6xl mx-auto p-6">
 
-      {message && <Message type={type} text={message} />}
+      {type === "error" && <Message type={type} text={message} />}
+      {type === "success" && <Message type={type} text={message} />}
 
       {/* PRODUCT SECTION */}
 
       <div className="grid md:grid-cols-2 gap-10">
 
-        {/* IMAGE WITH ZOOM */}
+        {/* IMAGE */}
 
         <div
           className="overflow-hidden rounded shadow"
@@ -171,8 +195,6 @@ export default function ProductDetails() {
             ₹{product.price}
           </p>
 
-          {/* Rating */}
-
           <div className="text-yellow-500 text-lg mt-2">
             {renderStars(product.rating || 0)}
           </div>
@@ -180,8 +202,6 @@ export default function ProductDetails() {
           <p className="text-sm text-gray-600">
             {product.numReviews || 0} reviews
           </p>
-
-          {/* Stock */}
 
           {product.countInStock > 5 && (
             <p className="text-green-600 font-semibold mt-2">
@@ -220,8 +240,6 @@ export default function ProductDetails() {
               onSubmit={submitReview}
               className="flex flex-col gap-3"
             >
-
-              {/* STAR SELECTOR */}
 
               <div className="flex gap-2 text-3xl">
 
@@ -318,6 +336,12 @@ export default function ProductDetails() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
 
+          {relatedProducts.length === 0 && (
+            <p className="text-gray-500">
+              No related products
+            </p>
+          )}
+
           {relatedProducts.map((p) => (
 
             <div
@@ -329,6 +353,7 @@ export default function ProductDetails() {
               <img
                 src={p.image || "https://via.placeholder.com/200"}
                 className="h-32 w-full object-cover rounded"
+                alt={p.name}
               />
 
               <p className="font-semibold mt-2">
