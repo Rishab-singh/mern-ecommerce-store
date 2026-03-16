@@ -54,3 +54,19 @@ npm run dev
 - Payment Gateway Integration
 - Real-time Order Tracking
 - WebSocket Notifications
+
+
+
+
+Admin Login
+email: rishabsingh5085@gmail.com
+password: 123456
+
+Live Demo: https://mern-ecommerce-store-6z1z1jojg-rishab-singh-8282s-projects.vercel.app/
+Backend API: https://mern-ecommerce-store-t8vf.onrender.com
+
+
+
+
+
+
