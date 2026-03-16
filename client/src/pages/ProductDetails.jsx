@@ -58,8 +58,7 @@ export default function ProductDetails() {
 
       console.error("Product fetch error:", err);
 
-      setType("error");
-      setMessage("Failed to load product");
+      
 
     } finally {
 
