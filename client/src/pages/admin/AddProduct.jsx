@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
-import AdminLayout from "../../components/AdminLayout";
+
 import { categories } from "../../constants/categories";
 import Loader from "../../components/Loader";
 import Message from "../../components/Message";
@@ -60,7 +60,7 @@ export default function AddProduct() {
   };
 
   return (
-    <AdminLayout>
+    <div className="p-6">
 
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
@@ -157,7 +157,7 @@ export default function AddProduct() {
         </form>
 
       </div>
-
-    </AdminLayout>
+   </div>
+    
   );
 }

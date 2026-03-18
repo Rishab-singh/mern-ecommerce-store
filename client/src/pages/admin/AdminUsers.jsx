@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
-import AdminLayout from "../../components/AdminLayout";
 import Loader from "../../components/Loader";
 import Message from "../../components/Message";
 
@@ -15,8 +14,6 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [type, setType] = useState("");
-
-
 
   const fetchUsers = async () => {
 
@@ -33,17 +30,12 @@ export default function AdminUsers() {
         }
       });
 
-      // handle both array and paginated response
       if (Array.isArray(data)) {
-
         setUsers(data);
         setPages(1);
-
       } else {
-
         setUsers(data.users || []);
         setPages(data.pages || 1);
-
       }
 
     } catch (error) {
@@ -59,15 +51,9 @@ export default function AdminUsers() {
 
   };
 
-
-
   useEffect(() => {
-
     fetchUsers();
-
   }, [search, page]);
-
-
 
   const deleteUser = async (id) => {
 
@@ -91,14 +77,11 @@ export default function AdminUsers() {
 
   };
 
-
-
   return (
 
-    <AdminLayout>
+    <div className="p-6">
 
       {/* Header */}
-
       <div className="flex justify-between items-center mb-6">
 
         <h2 className="text-2xl font-bold">
@@ -118,64 +101,36 @@ export default function AdminUsers() {
 
       </div>
 
-
-
+      {/* Messages */}
       {loading && <Loader />}
       {message && <Message type={type} text={message} />}
 
-
-
-      {/* Users Table */}
-
+      {/* Table */}
       <div className="bg-white rounded-lg shadow">
 
         <div className="overflow-x-auto">
 
           <table className="w-full">
 
-            {/* Header */}
-
             <thead className="bg-gray-100 text-gray-700">
 
               <tr>
-
-                <th className="py-3 px-6 text-left">
-                  Name
-                </th>
-
-                <th className="py-3 px-6 text-left">
-                  Email
-                </th>
-
-                <th className="py-3 px-6 text-center">
-                  Role
-                </th>
-
-                <th className="py-3 px-6 text-center">
-                  Actions
-                </th>
-
+                <th className="py-3 px-6 text-left">Name</th>
+                <th className="py-3 px-6 text-left">Email</th>
+                <th className="py-3 px-6 text-center">Role</th>
+                <th className="py-3 px-6 text-center">Actions</th>
               </tr>
 
             </thead>
 
-
-
-            {/* Body */}
-
             <tbody>
 
-              {!users || users.length === 0 ? (
+              {users.length === 0 ? (
 
                 <tr>
-
-                  <td
-                    colSpan="4"
-                    className="text-center py-6 text-gray-500"
-                  >
+                  <td colSpan="4" className="text-center py-6 text-gray-500">
                     No users found
                   </td>
-
                 </tr>
 
               ) : (
@@ -187,29 +142,18 @@ export default function AdminUsers() {
                     className="border-t hover:bg-gray-50 transition"
                   >
 
-                    {/* Name */}
-
                     <td className="py-4 px-6 font-medium">
                       {u.name}
                     </td>
-
-
-
-                    {/* Email */}
 
                     <td className="py-4 px-6 text-gray-600 break-all">
                       {u.email}
                     </td>
 
-
-
-                    {/* Role */}
-
                     <td className="py-4 px-6 text-center">
 
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold
-                        ${
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           u.role === "admin"
                             ? "bg-green-100 text-green-700"
                             : "bg-gray-100 text-gray-700"
@@ -219,10 +163,6 @@ export default function AdminUsers() {
                       </span>
 
                     </td>
-
-
-
-                    {/* Actions */}
 
                     <td className="py-4 px-6 text-center">
 
@@ -249,10 +189,7 @@ export default function AdminUsers() {
 
       </div>
 
-
-
       {/* Pagination */}
-
       <div className="flex justify-center mt-8 gap-2 flex-wrap">
 
         {[...Array(pages).keys()].map((x) => (
@@ -273,8 +210,6 @@ export default function AdminUsers() {
 
       </div>
 
-    </AdminLayout>
-
+    </div>
   );
-
 }

@@ -3,365 +3,411 @@ import { useParams, useNavigate } from "react-router-dom";
 import API from "../services/api";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
+import { ShoppingCart } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function ProductDetails() {
 
-  const { id } = useParams();
-  const navigate = useNavigate();
+const { id } = useParams();
+const navigate = useNavigate();
 
-  const [product, setProduct] = useState(null);
-  const [relatedProducts, setRelatedProducts] = useState([]);
-  const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
-  const [comment, setComment] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [zoom, setZoom] = useState(false);
+const [product,setProduct] = useState(null);
+const [relatedProducts,setRelatedProducts] = useState([]);
 
-  const [message, setMessage] = useState("");
-  const [type, setType] = useState("");
+const [rating,setRating] = useState(0);
+const [hover,setHover] = useState(0);
+const [comment,setComment] = useState("");
 
-  useEffect(() => {
-    if (id) fetchProduct();
-  }, [id]);
+const [loading,setLoading] = useState(true);
+const [zoom,setZoom] = useState(false);
 
-  const fetchProduct = async () => {
-    try {
+const [message,setMessage] = useState("");
+const [type,setType] = useState("");
 
-      setLoading(true);
-      setMessage("");
-      setType("");
 
-      const res = await API.get(`/products/${id}`);
-      const productData = res.data;
 
-      setProduct(productData);
+useEffect(()=>{
+if(id) fetchProduct();
+},[id]);
 
-      // Fetch related products
-      try {
 
-        const list = await API.get("/products");
-        const productsArray = list.data?.products || [];
 
-        const related = productsArray.filter(
-          (p) =>
-            p.category === productData.category &&
-            p._id !== productData._id
-        );
+const fetchProduct = async()=>{
 
-        setRelatedProducts(related.slice(0, 4));
+try{
 
-      } catch (err) {
-        console.log("Related product error:", err);
-      }
+setLoading(true);
+setMessage("");
 
-    } catch (err) {
+const res = await API.get(`/products/${id}`);
+const productData = res.data;
 
-      console.error("Product fetch error:", err);
+setProduct(productData);
 
-      
 
-    } finally {
 
-      setLoading(false);
+/* related products */
 
-    }
-  };
+try{
 
-  const addToCart = async () => {
-    try {
+const list = await API.get("/products");
 
-      await API.post("/cart", {
-        productId: id,
-        quantity: 1
-      });
+const productsArray = list.data?.products || [];
 
-      setType("success");
-      setMessage("Added to cart ✅");
+const related = productsArray.filter(
+(p)=>p.category === productData.category && p._id !== productData._id
+);
 
-    } catch (err) {
+setRelatedProducts(related.slice(0,4));
 
-      navigate("/login");
+}catch(err){
+console.log(err);
+}
 
-    }
-  };
+}catch(err){
 
-  const submitReview = async (e) => {
+setType("error");
+setMessage("Failed to load product");
 
-    e.preventDefault();
+}finally{
 
-    if (rating === 0) {
-      setType("error");
-      setMessage("Please select rating");
-      return;
-    }
+setLoading(false);
 
-    try {
+}
 
-      await API.post(`/products/${id}/reviews`, {
-        rating,
-        comment
-      });
+};
 
-      setType("success");
-      setMessage("Review submitted ⭐");
 
-      setRating(0);
-      setComment("");
 
-      fetchProduct();
+const addToCart = async()=>{
 
-    } catch (err) {
+try{
 
-      setType("error");
-      setMessage(
-        err.response?.data?.message || "Failed to submit review"
-      );
+await API.post("/cart",{
+productId:id,
+quantity:1
+});
 
-    }
-  };
+setType("success");
+setMessage("Added to cart");
 
-  const renderStars = (value) => {
+}catch(err){
 
-    const stars = [];
+navigate("/login");
 
-    for (let i = 1; i <= 5; i++) {
+}
 
-      stars.push(
-        <span key={i}>
-          {value >= i ? "⭐" : "☆"}
-        </span>
-      );
+};
 
-    }
 
-    return stars;
-  };
 
-  if (loading) return <Loader />;
+const submitReview = async(e)=>{
 
-  if (!product) return <Message type="error" text="Product not found" />;
+e.preventDefault();
 
-  return (
+if(rating === 0){
+setType("error");
+setMessage("Please select rating");
+return;
+}
 
-    <div className="max-w-6xl mx-auto p-6">
+try{
 
-      {message && <Message type={type} text={message} />}
+await API.post(`/products/${id}/reviews`,{
+rating,
+comment
+});
 
-      {/* PRODUCT SECTION */}
+setType("success");
+setMessage("Review submitted");
 
-      <div className="grid md:grid-cols-2 gap-10">
+setRating(0);
+setComment("");
 
-        {/* IMAGE */}
+fetchProduct();
 
-        <div
-          className="overflow-hidden rounded shadow"
-          onMouseEnter={() => setZoom(true)}
-          onMouseLeave={() => setZoom(false)}
-        >
+}catch(err){
 
-          <img
-            src={product.image || "https://via.placeholder.com/400"}
-            alt={product.name}
-            className={`w-full transition-transform duration-300 ${
-              zoom ? "scale-125" : "scale-100"
-            }`}
-          />
+setType("error");
+setMessage(err.response?.data?.message || "Review failed");
 
-        </div>
+}
 
-        {/* PRODUCT INFO */}
+};
 
-        <div>
 
-          <h1 className="text-3xl font-bold">
-            {product.name}
-          </h1>
 
-          <p className="text-gray-600 mt-2">
-            {product.description}
-          </p>
+const renderStars=(value)=>{
 
-          <p className="text-2xl font-bold mt-4">
-            ₹{product.price}
-          </p>
+const stars=[];
 
-          <div className="text-yellow-500 text-lg mt-2">
-            {renderStars(product.rating || 0)}
-          </div>
+for(let i=1;i<=5;i++){
 
-          <p className="text-sm text-gray-600">
-            {product.numReviews || 0} reviews
-          </p>
+stars.push(
+<span key={i}>
+{value>=i ? "⭐":"☆"}
+</span>
+);
 
-          {/* STOCK */}
+}
 
-          {product.countInStock > 5 && (
-            <p className="text-green-600 font-semibold mt-2">
-              In Stock
-            </p>
-          )}
+return stars;
 
-          {product.countInStock > 0 &&
-            product.countInStock <= 5 && (
-              <p className="text-yellow-600 font-semibold mt-2">
-                Only {product.countInStock} left
-              </p>
-            )}
+};
 
-          {product.countInStock === 0 && (
-            <p className="text-red-600 font-semibold mt-2">
-              Out of Stock
-            </p>
-          )}
 
-          <button
-            onClick={addToCart}
-            className="mt-4 bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
-          >
-            Add to Cart
-          </button>
 
-          {/* REVIEW FORM */}
+if(loading) return <Loader/>;
 
-          <div className="mt-6 border-t pt-4">
+if(!product) return <Message type="error" text="Product not found"/>;
 
-            <h3 className="text-lg font-semibold mb-2">
-              Write a Review
-            </h3>
 
-            <form
-              onSubmit={submitReview}
-              className="flex flex-col gap-3"
-            >
 
-              <div className="flex gap-2 text-3xl">
+return(
 
-                {[1, 2, 3, 4, 5].map((star) => (
+<div className="max-w-7xl mx-auto px-6 py-10">
 
-                  <span
-                    key={star}
-                    className={`cursor-pointer ${
-                      (hover || rating) >= star
-                        ? "text-yellow-500"
-                        : "text-gray-300"
-                    }`}
-                    onClick={() => setRating(star)}
-                    onMouseEnter={() => setHover(star)}
-                    onMouseLeave={() => setHover(0)}
-                  >
-                    ★
-                  </span>
+{message && <Message type={type} text={message}/>}
 
-                ))}
 
-              </div>
 
-              <textarea
-                placeholder="Write your review"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="border p-2 rounded"
-              />
+{/* PRODUCT SECTION */}
 
-              <button
-                type="submit"
-                className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-              >
-                Submit Review
-              </button>
+<div className="grid md:grid-cols-2 gap-12 items-start">
 
-            </form>
 
-          </div>
 
-        </div>
+{/* IMAGE */}
 
-      </div>
+<div
+className="bg-white rounded-xl border overflow-hidden shadow-sm"
+onMouseEnter={()=>setZoom(true)}
+onMouseLeave={()=>setZoom(false)}
+>
 
-      {/* REVIEWS */}
+<img
+src={product.image || "https://via.placeholder.com/500"}
+alt={product.name}
+className={`w-full transition-transform duration-300 ${
+zoom ? "scale-125":"scale-100"
+}`}
+/>
 
-      <div className="mt-12">
+</div>
 
-        <h2 className="text-2xl font-bold mb-4">
-          Customer Reviews
-        </h2>
 
-        {!product.reviews || product.reviews.length === 0 ? (
 
-          <p className="text-gray-500">
-            No reviews yet
-          </p>
+{/* PRODUCT INFO */}
 
-        ) : (
+<div className="space-y-4">
 
-          product.reviews.map((review) => (
+<h1 className="text-3xl font-bold">
+{product.name}
+</h1>
 
-            <div key={review._id} className="border-b py-4">
+<p className="text-gray-600">
+{product.description}
+</p>
 
-              <strong>{review.name}</strong>
 
-              <div className="text-yellow-500">
-                {renderStars(review.rating)}
-              </div>
 
-              <p className="text-gray-600">
-                {review.comment}
-              </p>
+<div className="text-yellow-500 text-lg">
+{renderStars(product.rating || 0)}
+</div>
 
-            </div>
+<p className="text-sm text-gray-500">
+{product.numReviews || 0} reviews
+</p>
 
-          ))
 
-        )}
 
-      </div>
+<p className="text-3xl font-bold">
+₹{product.price}
+</p>
 
-      {/* RELATED PRODUCTS */}
 
-      <div className="mt-16">
 
-        <h2 className="text-2xl font-bold mb-6">
-          Related Products
-        </h2>
+{/* STOCK */}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+{product.countInStock > 5 && (
+<p className="text-green-600 font-semibold">
+In Stock
+</p>
+)}
 
-          {relatedProducts.length === 0 && (
-            <p className="text-gray-500">
-              No related products
-            </p>
-          )}
+{product.countInStock > 0 && product.countInStock <= 5 && (
+<p className="text-yellow-600 font-semibold">
+Only {product.countInStock} left
+</p>
+)}
 
-          {relatedProducts.map((p) => (
+{product.countInStock === 0 && (
+<p className="text-red-600 font-semibold">
+Out of Stock
+</p>
+)}
 
-            <div
-              key={p._id}
-              onClick={() => navigate(`/product/${p._id}`)}
-              className="border rounded p-3 cursor-pointer hover:shadow"
-            >
 
-              <img
-                src={p.image || "https://via.placeholder.com/200"}
-                className="h-32 w-full object-cover rounded"
-                alt={p.name}
-              />
 
-              <p className="font-semibold mt-2">
-                {p.name}
-              </p>
+<button
+onClick={addToCart}
+className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition"
+>
 
-              <p className="text-sm text-gray-600">
-                ₹{p.price}
-              </p>
+<ShoppingCart size={18}/>
+Add to Cart
 
-            </div>
+</button>
 
-          ))}
 
-        </div>
 
-      </div>
+{/* REVIEW FORM */}
 
-    </div>
-  );
+<div className="border-t pt-6">
+
+<h3 className="text-lg font-semibold mb-3">
+Write a Review
+</h3>
+
+<form
+onSubmit={submitReview}
+className="flex flex-col gap-3"
+>
+
+<div className="flex gap-2 text-3xl">
+
+{[1,2,3,4,5].map((star)=>(
+
+<span
+key={star}
+className={`cursor-pointer ${
+(hover || rating) >= star
+? "text-yellow-500"
+: "text-gray-300"
+}`}
+onClick={()=>setRating(star)}
+onMouseEnter={()=>setHover(star)}
+onMouseLeave={()=>setHover(0)}
+>
+★
+</span>
+
+))}
+
+</div>
+
+<textarea
+placeholder="Write your review"
+value={comment}
+onChange={(e)=>setComment(e.target.value)}
+className="border rounded p-2"
+/>
+
+<button
+type="submit"
+className="bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700"
+>
+Submit Review
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+{/* REVIEWS */}
+
+<div className="mt-16">
+
+<h2 className="text-2xl font-bold mb-6">
+Customer Reviews
+</h2>
+
+{!product.reviews || product.reviews.length === 0 ? (
+
+<p className="text-gray-500">
+No reviews yet
+</p>
+
+):(product.reviews.map((review)=>(
+
+<div
+key={review._id}
+className="border-b py-4"
+>
+
+<strong>{review.name}</strong>
+
+<div className="text-yellow-500">
+{renderStars(review.rating)}
+</div>
+
+<p className="text-gray-600">
+{review.comment}
+</p>
+
+</div>
+
+)))}
+
+</div>
+
+
+
+{/* RELATED PRODUCTS */}
+
+<div className="mt-16">
+
+<h2 className="text-2xl font-bold mb-6">
+Related Products
+</h2>
+
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+{relatedProducts.length === 0 && (
+<p className="text-gray-500">
+No related products
+</p>
+)}
+
+{relatedProducts.map((p)=>(
+
+<motion.div
+key={p._id}
+whileHover={{y:-5}}
+onClick={()=>navigate(`/product/${p._id}`)}
+className="bg-white border rounded-xl shadow-sm hover:shadow-lg p-3 cursor-pointer"
+>
+
+<img
+src={p.image || "https://via.placeholder.com/200"}
+className="h-32 w-full object-cover rounded"
+alt={p.name}
+/>
+
+<p className="font-semibold mt-2">
+{p.name}
+</p>
+
+<p className="text-sm text-gray-600">
+₹{p.price}
+</p>
+
+</motion.div>
+
+))}
+
+</div>
+
+</div>
+
+</div>
+
+);
+
 }

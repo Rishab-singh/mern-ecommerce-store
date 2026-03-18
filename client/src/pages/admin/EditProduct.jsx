@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../services/api";
-import AdminLayout from "../../components/AdminLayout";
 import { categories } from "../../constants/categories";
+import Loader from "../../components/Loader";
+import Message from "../../components/Message";
 
 export default function EditProduct() {
 
@@ -18,16 +19,27 @@ export default function EditProduct() {
     image: ""
   });
 
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState("");
+
   useEffect(() => {
 
     const fetchProduct = async () => {
       try {
 
+        setLoading(true);
+
         const { data } = await API.get(`/products/${id}`);
         setProduct(data);
 
       } catch (error) {
-        console.error(error);
+
+        setType("error");
+        setMessage("Failed to load product");
+
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -41,21 +53,32 @@ export default function EditProduct() {
 
     try {
 
+      setLoading(true);
+      setMessage("");
+
       await API.put(`/products/${id}`, product);
 
-      alert("Product Updated ✅");
+      setType("success");
+      setMessage("Product updated successfully ✅");
 
-      navigate("/admin/products");
+      setTimeout(() => {
+        navigate("/admin/products");
+      }, 1200);
 
     } catch (error) {
-      alert("Update Failed");
+
+      setType("error");
+      setMessage("Update failed");
+
+    } finally {
+      setLoading(false);
     }
 
   };
 
   return (
 
-    <AdminLayout>
+    <div className="p-6">
 
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
@@ -73,8 +96,11 @@ export default function EditProduct() {
 
       </div>
 
+      {/* Messages */}
+      {loading && <Loader />}
+      {message && <Message type={type} text={message} />}
 
-      {/* Same container style */}
+      {/* Form */}
       <div className="bg-white rounded-lg shadow p-6 max-w-3xl">
 
         <form
@@ -89,6 +115,7 @@ export default function EditProduct() {
               setProduct({ ...product, name: e.target.value })
             }
             className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
 
           <input
@@ -98,6 +125,7 @@ export default function EditProduct() {
               setProduct({ ...product, description: e.target.value })
             }
             className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
 
           <input
@@ -108,15 +136,16 @@ export default function EditProduct() {
               setProduct({ ...product, price: e.target.value })
             }
             className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
 
-          {/* Category Select */}
           <select
             value={product.category}
             onChange={(e) =>
               setProduct({ ...product, category: e.target.value })
             }
             className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           >
 
             <option value="">Select Category</option>
@@ -137,6 +166,7 @@ export default function EditProduct() {
               setProduct({ ...product, countInStock: e.target.value })
             }
             className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
 
           <input
@@ -150,15 +180,16 @@ export default function EditProduct() {
 
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+            disabled={loading}
+            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition disabled:opacity-50"
           >
-            Update Product
+            {loading ? "Updating..." : "Update Product"}
           </button>
 
         </form>
 
       </div>
 
-    </AdminLayout>
+    </div>
   );
 }

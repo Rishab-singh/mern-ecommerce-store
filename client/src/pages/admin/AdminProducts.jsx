@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../../services/api";
-import AdminLayout from "../../components/AdminLayout";
 import Loader from "../../components/Loader";
 import Message from "../../components/Message";
 
@@ -13,41 +12,30 @@ export default function AdminProducts() {
   const [type, setType] = useState("");
 
   const fetchProducts = async () => {
-
     try {
-
       setLoading(true);
       setMessage("");
 
       const { data } = await API.get("/products?limit=1000");
-
       setProducts(data.products);
 
     } catch (error) {
-
       setType("error");
       setMessage("Failed to load products");
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-
-
   const deleteProduct = async (id) => {
 
     if (!window.confirm("Delete this product?")) return;
 
     try {
-
       setLoading(true);
 
       await API.delete(`/products/${id}`);
@@ -58,24 +46,18 @@ export default function AdminProducts() {
       fetchProducts();
 
     } catch (error) {
-
       setType("error");
       setMessage("Failed to delete product");
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
-
-
 
   return (
 
-    <AdminLayout>
+    <div className="p-6">
 
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
 
         <h2 className="text-2xl font-bold">
@@ -91,11 +73,11 @@ export default function AdminProducts() {
 
       </div>
 
+      {/* Messages */}
       {loading && <Loader />}
       {message && <Message type={type} text={message} />}
 
-
-
+      {/* Table */}
       <div className="bg-white rounded-lg shadow">
 
         <div className="overflow-x-auto">
@@ -105,28 +87,13 @@ export default function AdminProducts() {
             <thead className="bg-gray-100 text-gray-700">
 
               <tr>
-
-                <th className="py-3 px-6 text-left">
-                  Product
-                </th>
-
-                <th className="py-3 px-6 text-center">
-                  Price
-                </th>
-
-                <th className="py-3 px-6 text-center">
-                  Stock
-                </th>
-
-                <th className="py-3 px-6 text-center">
-                  Actions
-                </th>
-
+                <th className="py-3 px-6 text-left">Product</th>
+                <th className="py-3 px-6 text-center">Price</th>
+                <th className="py-3 px-6 text-center">Stock</th>
+                <th className="py-3 px-6 text-center">Actions</th>
               </tr>
 
             </thead>
-
-
 
             <tbody>
 
@@ -165,19 +132,13 @@ export default function AdminProducts() {
 
                     </td>
 
-
-
                     <td className="py-4 px-6 text-center">
                       ₹{product.price}
                     </td>
 
-
-
                     <td className="py-4 px-6 text-center">
                       {product.countInStock}
                     </td>
-
-
 
                     <td className="py-4 px-6 text-center">
 
@@ -216,8 +177,6 @@ export default function AdminProducts() {
 
       </div>
 
-    </AdminLayout>
-
+    </div>
   );
-
 }

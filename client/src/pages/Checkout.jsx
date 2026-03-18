@@ -4,147 +4,210 @@ import API from "../services/api";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 
-export default function Checkout() {
+import { MapPin, Phone, CreditCard } from "lucide-react";
+import { motion } from "framer-motion";
 
-  const navigate = useNavigate();
+export default function Checkout(){
 
-  const [address,setAddress] = useState("");
-  const [city,setCity] = useState("");
-  const [postalCode,setPostalCode] = useState("");
-  const [phone,setPhone] = useState("");
-  const [paymentMethod,setPaymentMethod] = useState("COD");
+const navigate = useNavigate();
 
-  const [loading,setLoading] = useState(false);
-  const [message,setMessage] = useState("");
-  const [type,setType] = useState("");
+const [address,setAddress] = useState("");
+const [city,setCity] = useState("");
+const [postalCode,setPostalCode] = useState("");
+const [phone,setPhone] = useState("");
+const [paymentMethod,setPaymentMethod] = useState("COD");
 
-  const placeOrder = async () => {
+const [loading,setLoading] = useState(false);
+const [message,setMessage] = useState("");
+const [type,setType] = useState("");
 
-    if(!address || !city || !postalCode || !phone){
-      setType("error");
-      setMessage("Please fill all fields");
-      return;
-    }
 
-    try{
 
-      setLoading(true);
-      setMessage("");
+const placeOrder = async()=>{
 
-      await API.post("/orders",{
-        shippingAddress:{
-          address,
-          city,
-          postalCode,
-          country:"India",
-          phone
-        },
-        paymentMethod
-      });
+if(!address || !city || !postalCode || !phone){
 
-      setType("success");
-      setMessage("Order placed successfully ✅");
+setType("error");
+setMessage("Please fill all fields");
+return;
 
-      setTimeout(()=>{
-        navigate("/orders");
-      },1200);
+}
 
-    }catch(error){
+try{
 
-      setType("error");
-      setMessage("Order failed ❌");
+setLoading(true);
+setMessage("");
 
-    }finally{
-      setLoading(false);
-    }
+await API.post("/orders",{
 
-  };
+shippingAddress:{
+address,
+city,
+postalCode,
+country:"India",
+phone
+},
 
-  if(loading) return <Loader />;
+paymentMethod
 
-  return(
+});
 
-    <div className="max-w-xl mx-auto p-6">
+setType("success");
+setMessage("Order placed successfully");
 
-      <h2 className="text-2xl font-bold mb-6 text-center">
-        Checkout
-      </h2>
+setTimeout(()=>{
+navigate("/orders");
+},1200);
 
-      {message && <Message type={type} text={message} />}
+}catch(err){
 
-      <div className="bg-white shadow p-6 rounded">
+setType("error");
+setMessage("Order failed");
 
-        <h3 className="font-semibold mb-3">
-          Shipping Address
-        </h3>
+}finally{
 
-        <input
-          type="text"
-          placeholder="Address"
-          className="border p-2 w-full mb-3"
-          value={address}
-          onChange={(e)=>setAddress(e.target.value)}
-        />
+setLoading(false);
 
-        <input
-          type="text"
-          placeholder="City"
-          className="border p-2 w-full mb-3"
-          value={city}
-          onChange={(e)=>setCity(e.target.value)}
-        />
+}
 
-        <input
-          type="text"
-          placeholder="Postal Code"
-          className="border p-2 w-full mb-3"
-          value={postalCode}
-          onChange={(e)=>setPostalCode(e.target.value)}
-        />
+};
 
-        <input
-          type="text"
-          placeholder="Phone Number"
-          className="border p-2 w-full mb-5"
-          value={phone}
-          onChange={(e)=>setPhone(e.target.value)}
-        />
 
-        <h3 className="font-semibold mb-3">
-          Payment Method
-        </h3>
 
-        <label className="block mb-2">
-          <input
-            type="radio"
-            value="COD"
-            checked={paymentMethod==="COD"}
-            onChange={(e)=>setPaymentMethod(e.target.value)}
-          />
-          Cash On Delivery
-        </label>
+if(loading) return <Loader/>;
 
-        <label className="block mb-4">
-          <input
-            type="radio"
-            value="UPI"
-            checked={paymentMethod==="UPI"}
-            onChange={(e)=>setPaymentMethod(e.target.value)}
-          />
-          UPI Payment
-        </label>
 
-        <button
-          onClick={placeOrder}
-          disabled={loading}
-          className="bg-black text-white px-6 py-2 rounded w-full hover:bg-gray-800 disabled:opacity-50"
-        >
-          {loading ? "Placing Order..." : "Place Order"}
-        </button>
 
-      </div>
+return(
 
-    </div>
+<div className="max-w-4xl mx-auto px-6 py-10">
 
-  );
+<h2 className="text-4xl font-bold text-center mb-10">
+Checkout
+</h2>
+
+{message && <Message type={type} text={message}/>}
+
+
+
+<div className="bg-white border rounded-xl shadow-sm p-8 space-y-8">
+
+
+
+{/* SHIPPING ADDRESS */}
+
+<div>
+
+<h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+<MapPin size={18}/> Shipping Address
+</h3>
+
+<div className="grid md:grid-cols-2 gap-4">
+
+<input
+type="text"
+placeholder="Address"
+className="border p-3 rounded-lg"
+value={address}
+onChange={(e)=>setAddress(e.target.value)}
+/>
+
+<input
+type="text"
+placeholder="City"
+className="border p-3 rounded-lg"
+value={city}
+onChange={(e)=>setCity(e.target.value)}
+/>
+
+<input
+type="text"
+placeholder="Postal Code"
+className="border p-3 rounded-lg"
+value={postalCode}
+onChange={(e)=>setPostalCode(e.target.value)}
+/>
+
+<input
+type="text"
+placeholder="Phone Number"
+className="border p-3 rounded-lg"
+value={phone}
+onChange={(e)=>setPhone(e.target.value)}
+/>
+
+</div>
+
+</div>
+
+
+
+{/* PAYMENT METHOD */}
+
+<div>
+
+<h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+<CreditCard size={18}/> Payment Method
+</h3>
+
+
+
+<div className="space-y-3">
+
+<label className="flex items-center gap-3 border p-3 rounded-lg cursor-pointer hover:bg-gray-50">
+
+<input
+type="radio"
+value="COD"
+checked={paymentMethod==="COD"}
+onChange={(e)=>setPaymentMethod(e.target.value)}
+/>
+
+Cash On Delivery
+
+</label>
+
+
+
+<label className="flex items-center gap-3 border p-3 rounded-lg cursor-pointer hover:bg-gray-50">
+
+<input
+type="radio"
+value="UPI"
+checked={paymentMethod==="UPI"}
+onChange={(e)=>setPaymentMethod(e.target.value)}
+/>
+
+UPI Payment
+
+</label>
+
+</div>
+
+</div>
+
+
+
+{/* PLACE ORDER */}
+
+<motion.button
+whileHover={{scale:1.03}}
+whileTap={{scale:.97}}
+onClick={placeOrder}
+disabled={loading}
+className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition font-semibold"
+>
+
+{loading ? "Placing Order..." : "Place Order"}
+
+</motion.button>
+
+
+
+</div>
+
+</div>
+
+);
+
 }

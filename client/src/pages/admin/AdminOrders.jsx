@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
-import AdminLayout from "../../components/AdminLayout";
 import Loader from "../../components/Loader";
 import Message from "../../components/Message";
 
@@ -58,47 +57,34 @@ export default function AdminOrders() {
 
   return (
 
-    <AdminLayout>
+    <div className="p-6">
 
       <h2 className="text-2xl font-bold mb-6">
         Orders
       </h2>
 
+      {/* Messages */}
       {loading && <Loader />}
       {message && <Message type={type} text={message} />}
 
+      {/* Table */}
       <div className="bg-white rounded-lg shadow">
 
         <div className="overflow-x-auto">
 
           <table className="w-full">
 
-            {/* HEADER */}
             <thead className="bg-gray-100 text-gray-700">
 
               <tr>
-
-                <th className="py-3 px-6 text-left">
-                  User
-                </th>
-
-                <th className="py-3 px-6 text-center">
-                  Total
-                </th>
-
-                <th className="py-3 px-6 text-center">
-                  Payment
-                </th>
-
-                <th className="py-3 px-6 text-center">
-                  Order Status
-                </th>
-
+                <th className="py-3 px-6 text-left">User</th>
+                <th className="py-3 px-6 text-center">Total</th>
+                <th className="py-3 px-6 text-center">Payment</th>
+                <th className="py-3 px-6 text-center">Order Status</th>
               </tr>
 
             </thead>
 
-            {/* BODY */}
             <tbody>
 
               {orders.length === 0 ? (
@@ -118,26 +104,21 @@ export default function AdminOrders() {
                     className="border-t hover:bg-gray-50 transition"
                   >
 
-                    {/* USER */}
-                    <td className="py-4 px-6 text-left font-medium align-middle">
-
+                    {/* User */}
+                    <td className="py-4 px-6 font-medium">
                       {order.user?.name || "User"}
-
                     </td>
 
-                    {/* TOTAL */}
-                    <td className="py-4 px-6 text-center align-middle">
-
+                    {/* Total */}
+                    <td className="py-4 px-6 text-center">
                       ₹{order.totalAmount}
-
                     </td>
 
-                    {/* PAYMENT */}
-                    <td className="py-4 px-6 text-center align-middle">
+                    {/* Payment */}
+                    <td className="py-4 px-6 text-center">
 
                       <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold
-                        ${
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
                           order.paymentStatus === "Paid"
                             ? "bg-green-100 text-green-700"
                             : "bg-yellow-100 text-yellow-700"
@@ -148,8 +129,8 @@ export default function AdminOrders() {
 
                     </td>
 
-                    {/* ORDER STATUS */}
-                    <td className="py-4 px-6 text-center align-middle">
+                    {/* Order Status */}
+                    <td className="py-4 px-6 text-center">
 
                       <select
                         value={order.orderStatus}
@@ -181,7 +162,6 @@ export default function AdminOrders() {
 
       </div>
 
-    </AdminLayout>
-
+    </div>
   );
 }

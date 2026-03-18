@@ -4,180 +4,247 @@ import API from "../services/api";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 
-export default function Orders() {
+import { Package, Truck, CheckCircle } from "lucide-react";
+import { motion } from "framer-motion";
 
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
-  const [type, setType] = useState("");
+export default function Orders(){
 
-  const navigate = useNavigate();
+const [orders,setOrders] = useState([]);
+const [loading,setLoading] = useState(true);
+const [message,setMessage] = useState("");
+const [type,setType] = useState("");
 
-  useEffect(() => {
+const navigate = useNavigate();
 
-    const fetchOrders = async () => {
 
-      try {
 
-        setLoading(true);
-        setMessage("");
+useEffect(()=>{
 
-        const user = JSON.parse(localStorage.getItem("user"));
+const fetchOrders = async()=>{
 
-        if (!user) {
-          navigate("/login");
-          return;
-        }
+try{
 
-        const { data } = await API.get("/orders/my");
-        setOrders(data);
+setLoading(true);
+setMessage("");
 
-      } catch (err) {
+const user = JSON.parse(localStorage.getItem("user"));
 
-        setType("error");
-        setMessage("Failed to load orders");
+if(!user){
+navigate("/login");
+return;
+}
 
-      } finally {
-        setLoading(false);
-      }
+const {data} = await API.get("/orders/my");
 
-    };
+setOrders(data);
 
-    fetchOrders();
+}catch(err){
 
-  }, [navigate]);
+setType("error");
+setMessage("Failed to load orders");
 
-  if (loading) return <Loader />;
+}finally{
 
-  return (
+setLoading(false);
 
-    <div className="max-w-5xl mx-auto p-6">
+}
 
-      <h2 className="text-3xl font-bold mb-8 text-center">
-        My Orders
-      </h2>
+};
 
-      {message && <Message type={type} text={message} />}
+fetchOrders();
 
-      {orders.length === 0 ? (
+},[navigate]);
 
-        <p className="text-center text-gray-500">
-          No orders found
-        </p>
 
-      ) : (
 
-        orders.map((order) => (
+if(loading) return <Loader/>;
 
-          <div
-            key={order._id}
-            className="bg-white shadow-lg rounded-xl p-6 mb-6 border"
-          >
 
-            {/* Order Header */}
-            <div className="flex justify-between flex-wrap gap-4 mb-4 border-b pb-3">
 
-              <div>
-                <p className="text-sm text-gray-500">Order ID</p>
-                <p className="font-semibold text-sm">
-                  ORD-{order._id.slice(-6).toUpperCase()}
-                </p>
-              </div>
+return(
 
-              <div>
-                <p className="text-sm text-gray-500">Date</p>
-                <p className="font-semibold">
-                  {new Date(order.createdAt).toLocaleDateString()}
-                </p>
-              </div>
+<div className="max-w-6xl mx-auto px-6 py-10">
 
-              <div>
-                <p className="text-sm text-gray-500">Total</p>
-                <p className="font-semibold">
-                  ₹{order.totalAmount || 0}
-                </p>
-              </div>
+<h2 className="text-4xl font-bold text-center mb-10">
+My Orders
+</h2>
 
-              <div>
-                <p className="text-sm text-gray-500">Status</p>
+{message && <Message type={type} text={message}/>}
 
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold
-                  ${
-                    order.orderStatus === "Delivered"
-                      ? "bg-green-100 text-green-700"
-                      : order.orderStatus === "Shipped"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {order.orderStatus}
-                </span>
 
-              </div>
 
-            </div>
+{orders.length === 0 ? (
 
-            {/* Ordered Items */}
-            <div className="space-y-4">
+<div className="text-center py-20 text-gray-500">
 
-              {order.orderItems.map((item, index) => (
+<Package size={60} className="mx-auto mb-4 text-gray-400"/>
 
-                <div
-                  key={index}
-                  className="flex items-center gap-4"
-                >
+<p className="text-lg">
+You haven't placed any orders yet
+</p>
 
-                  {/* Product Image */}
-                  <img
-                    src={item.image || "https://via.placeholder.com/100"}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded cursor-pointer"
-                    onClick={() => navigate(`/product/${item.product}`)}
-                  />
+<button
+onClick={()=>navigate("/")}
+className="mt-6 bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition"
+>
+Browse Products
+</button>
 
-                  {/* Product Info */}
-                  <div className="flex-1">
+</div>
 
-                    <p
-                      className="font-medium cursor-pointer hover:underline"
-                      onClick={() => navigate(`/product/${item.product}`)}
-                    >
-                      {item.name}
-                    </p>
+):(orders.map((order)=>(
 
-                    <p className="text-sm text-gray-600">
-                      {item.quantity} × ₹{item.price}
-                    </p>
+<motion.div
+key={order._id}
+whileHover={{scale:1.01}}
+className="bg-white border rounded-xl shadow-sm hover:shadow-lg p-6 mb-6"
+>
 
-                  </div>
 
-                </div>
 
-              ))}
+{/* ORDER HEADER */}
 
-            </div>
+<div className="flex flex-wrap justify-between gap-4 border-b pb-4 mb-4">
 
-            {/* Footer Actions */}
-            <div className="flex justify-end mt-4 gap-3">
+<div>
 
-              <button
-                onClick={() => navigate(`/track/${order._id}`)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
-              >
-                Track Order
-              </button>
+<p className="text-sm text-gray-500">
+Order ID
+</p>
 
-            </div>
+<p className="font-semibold">
+ORD-{order._id.slice(-6).toUpperCase()}
+</p>
 
-          </div>
+</div>
 
-        ))
 
-      )}
 
-    </div>
+<div>
 
-  );
+<p className="text-sm text-gray-500">
+Date
+</p>
+
+<p className="font-medium">
+{new Date(order.createdAt).toLocaleDateString()}
+</p>
+
+</div>
+
+
+
+<div>
+
+<p className="text-sm text-gray-500">
+Total
+</p>
+
+<p className="font-semibold">
+₹{order.totalAmount || 0}
+</p>
+
+</div>
+
+
+
+{/* STATUS */}
+
+<div>
+
+<p className="text-sm text-gray-500">
+Status
+</p>
+
+<span
+className={`px-3 py-1 text-xs font-semibold rounded-full flex items-center gap-1 w-fit
+${
+order.orderStatus === "Delivered"
+? "bg-green-100 text-green-700"
+: order.orderStatus === "Shipped"
+? "bg-blue-100 text-blue-700"
+: "bg-yellow-100 text-yellow-700"
+}`}
+>
+
+{order.orderStatus === "Delivered" && <CheckCircle size={14}/>}
+{order.orderStatus === "Shipped" && <Truck size={14}/>}
+{order.orderStatus === "Processing" && <Package size={14}/>}
+
+{order.orderStatus}
+
+</span>
+
+</div>
+
+</div>
+
+
+
+{/* ORDER ITEMS */}
+
+<div className="space-y-4">
+
+{order.orderItems.map((item,index)=>(
+
+<div
+key={index}
+className="flex items-center gap-4"
+>
+
+
+
+<img
+src={item.image || "https://via.placeholder.com/100"}
+alt={item.name}
+className="w-16 h-16 object-cover rounded cursor-pointer"
+onClick={()=>navigate(`/product/${item.product}`)}
+/>
+
+
+
+<div className="flex-1">
+
+<p
+className="font-medium cursor-pointer hover:underline"
+onClick={()=>navigate(`/product/${item.product}`)}
+>
+{item.name}
+</p>
+
+<p className="text-sm text-gray-500">
+{item.quantity} × ₹{item.price}
+</p>
+
+</div>
+
+</div>
+
+))}
+
+</div>
+
+
+
+{/* ACTIONS */}
+
+<div className="flex justify-end mt-5">
+
+<button
+onClick={()=>navigate(`/track/${order._id}`)}
+className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm transition"
+>
+Track Order
+</button>
+
+</div>
+
+</motion.div>
+
+)))}
+
+</div>
+
+);
 
 }
