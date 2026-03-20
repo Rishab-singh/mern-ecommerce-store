@@ -4,36 +4,59 @@ const router = express.Router();
 const { protect, admin } = require("../middleware/authMiddleware");
 const User = require("../models/User");
 
-
-// ================= GET USER PROFILE =================
-router.get("/profile", protect, (req, res) => {
-  res.json(req.user);
-});
-
-
-// ================= ADMIN DASHBOARD TEST =================
-router.get("/admin-dashboard", protect, admin, (req, res) => {
-  res.json({ message: "Welcome Admin" });
-});
-
-
 // ================= GET ALL USERS (ADMIN) =================
 router.get("/", protect, admin, async (req, res) => {
   try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
 
-    const users = await User.find().select("-password");
+    const searchTerm = req.query.search?.trim() || null;
+    const role = req.query.role || null;
 
-    res.json(users);
+    let query = {};
+
+if (searchTerm) {
+  query.$or = [
+    { name: { $regex: searchTerm, $options: "i" } },
+    { email: { $regex: searchTerm, $options: "i" } },
+  ];
+}
+
+if (role) {
+  query.role = role;
+}
+
+    const count = await User.countDocuments(query);
+
+    const users = await User.find(query)
+      .select("-password")
+      .sort(req.query.sort || "-createdAt")
+      .limit(limit)
+      .skip((page - 1) * limit);
+
+    res.json({
+      success: true,
+      users,
+      page,
+      pages: Math.ceil(count / limit),
+      total: count,
+    });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      users: [],
+    });
   }
 });
 
-
-// ================= DELETE USER (ADMIN) =================
+// ================= DELETE USER =================
 router.delete("/:id", protect, admin, async (req, res) => {
   try {
+    if (req.user._id.toString() === req.params.id) {
+      return res.status(400).json({ message: "You cannot delete yourself" });
+    }
 
     const user = await User.findById(req.params.id);
 
@@ -49,28 +72,5 @@ router.delete("/:id", protect, admin, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
-
-// ================= MAKE USER ADMIN =================
-router.put("/make-admin/:id", protect, admin, async (req, res) => {
-  try {
-
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    user.role = "admin";
-
-    await user.save();
-
-    res.json({ message: "User promoted to admin" });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
 
 module.exports = router;
